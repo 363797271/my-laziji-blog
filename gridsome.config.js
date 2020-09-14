@@ -19,20 +19,46 @@ module.exports = {
         // when content types are not publicly available (optional).
       }
     },
-    // {
-    //   resolve: `gridsome-source-github-api`,
-    //   options: {
-    //     token: process.env.GRIDSOME_GITHUB_TOKEN,
-    //     variables: {},
-    //     graphQLQuery: `
-    //       query {
-    //         repository(owner:"363797271",name:"linux"){
-    //           description
-    //         }
-    //       }
-    //       `
-    //   }
-    // }
+    {
+      use: `gridsome-source-github-api`,
+      options: {
+        token: process.env.GRIDSOME_GITHUB_TOKEN,
+        variables: {
+          page: 1
+        },
+        graphQLQuery: `
+          query{
+            viewer {
+              repositories(first: 100) {
+                totalCount
+                nodes {
+                  id
+                  name
+                  url
+                  description
+                  updatedAt
+                  stargazers(first: 100) {
+                    totalCount
+                  }
+                  watchers(first: 100) {
+                    totalCount
+                  }
+                  forkCount
+                  licenseInfo {
+                    spdxId
+                  }
+                  languages(first: 100) {
+                    nodes {
+                      name
+                    }
+                  }
+                }
+              }
+            }
+          }
+          `
+      }
+    }
   ],
   templates: {
     StrapiBlog: [

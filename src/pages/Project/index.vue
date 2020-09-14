@@ -38,7 +38,7 @@
                 <span>
                   <a
                     style="text-decoration:none;cursor:pointer"
-                    :href="`/project/detail/${item.name}`"
+                    :href="`/project/detail?name=${item.name}`"
                   >
                     <i class="el-icon-service"></i>
                     &nbsp;&nbsp; {{ item.name }}
@@ -56,7 +56,7 @@
                     前往GitHub
                   </el-button>
                   <el-button
-                    @click="$share('/project/detail/' + item.name)"
+                    @click="$share('/project/detail?name=' + item.name)"
                     style="padding: 3px 0"
                     type="text"
                     icon="el-icon-share"
@@ -80,7 +80,7 @@
               <el-col :span="16" style="padding-top: 5px">
                 <el-tooltip
                   effect="dark"
-                  :content="'star ' + item.stargazers_count"
+                  :content="'star ' + item.stargazerCount"
                   placement="bottom"
                 >
                   <i
@@ -88,40 +88,39 @@
                     style="margin: 0px 5px 0px 0px"
                   ></i>
                 </el-tooltip>
-                {{ item.stargazers_count }}
+                {{ item.stargazerCount }}
                 <el-tooltip
                   effect="dark"
-                  :content="'watch ' + item.watchers_count"
+                  :content="'watch ' + item.watcherCount"
                   placement="bottom"
                 >
                   <i class="el-icon-view" style="margin: 0px 5px 0px 15px"></i>
                 </el-tooltip>
-                {{ item.watchers_count }}
+                {{ item.watcherCount }}
                 <el-tooltip
                   effect="dark"
-                  :content="'fork ' + item.forks_count"
+                  :content="'fork ' + item.forkCount"
                   placement="bottom"
                 >
                   <i class="el-icon-bell" style="margin: 0px 5px 0px 15px"></i>
                 </el-tooltip>
-                {{ item.forks_count }}
+                {{ item.forkCount }}
               </el-col>
               <el-col :span="8" style="text-align: right;">
-                <el-tag
-                  size="small"
-                  type="danger"
-                  v-if="item.license && item.license.spdx_id"
-                >
-                  {{ item.license.spdx_id | upper }}
+                <el-tag size="small" type="danger" v-if="item.license">
+                  {{ item.license | upper }}
                 </el-tag>
-                <el-tag
-                  size="small"
-                  type="success"
-                  style="margin-left:5px"
-                  v-if="item.language"
-                >
-                  {{ item.language | upper }}
-                </el-tag>
+                <template v-if="item.language">
+                  <el-tag
+                    size="small"
+                    type="success"
+                    style="margin-left:5px"
+                    v-for="lang in item.language"
+                    :key="lang.name"
+                  >
+                    {{ lang.name | upper }}
+                  </el-tag>
+                </template>
               </el-col>
             </el-row>
           </div>
@@ -133,7 +132,7 @@
             layout="prev, pager, next"
             :current-page.sync="pageInfo.currentPage"
             :page-size="pageInfo.perPage"
-            :total="pageInfo.totalPages"
+            :total="pageInfo.totalCount"
           ></el-pagination>
         </div>
       </div>
@@ -152,29 +151,35 @@
 </template>
 
 <page-query>
-query($page: Int) {
-  allRepos(limit: 100, perPage: 9, page: $page) @paginate {
-    pageInfo {
-      currentPage
-      totalPages
-      perPage
-      totalItems
-    }
-
-    edges {
-      node {
-        id
-        name
-        url
-        description
-        updated_at
-        stargazers_count
-        watchers_count
-        forks_count
-        license {
-          spdx_id
+query {
+  metadata {
+    githubData {
+      viewer {
+        repositories {
+          totalCount
+          nodes{
+            id
+            name
+            url
+            description
+            updatedAt
+            stargazers {
+              totalCount
+            }
+            watchers {
+              totalCount
+            }
+            forkCount
+            licenseInfo {
+              spdxId
+            }
+            languages {
+              nodes {
+                name
+              }
+            }
+          }
         }
-        language
       }
     }
   }
@@ -186,21 +191,45 @@ export default {
   metaInfo: {
     title: '开源项目'
   },
+  data() {
+    return {
+      perPage: 5,
+      currentPage: this.$route.query.page || 1
+    }
+  },
   computed: {
+    repositories() {
+      return this.$page.metadata.githubData.viewer.repositories.nodes.map(
+        node => {
+          return Object.assign(node, {
+            stargazerCount: node.stargazers ? node.stargazers.totalCount : 0,
+            watcherCount: node.watchers ? node.watchers.totalCount : 0,
+            license: node.license ? node.license.spdxId : null,
+            language: node.languages ? node.languages.nodes || [] : []
+          })
+        }
+      )
+    },
     repos() {
-      return this.$page.allRepos.edges.map(edge => edge.node)
+      return this.repositories.slice(
+        (this.currentPage - 1) * this.perPage,
+        this.currentPage * this.perPage
+      )
     },
     pageInfo() {
-      return this.$page.allRepos.pageInfo
+      const perPage = this.perPage
+      const totalCount = this.$page.metadata.githubData.viewer.repositories
+        .totalCount
+      return {
+        currentPage: this.currentPage || 1,
+        perPage,
+        totalCount
+      }
     }
   },
   methods: {
     changePage(page) {
-      if (page == 1) {
-        window.location.href = `/project`
-      } else {
-        window.location.href = `/project/${page}`
-      }
+      this.currentPage = Number(page)
     },
     goGithub(url) {
       window.open(url)

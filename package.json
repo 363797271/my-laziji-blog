@@ -13,6 +13,7 @@
     "element-ui": "^2.13.2",
     "gridsome": "^0.7.0",
     "gridsome-source-github-api": "^0.1.4",
+    "js-base64": "^3.5.2",
     "markdown-it": "^11.0.0"
   }
 }

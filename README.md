@@ -4,6 +4,8 @@
 
 # API 使用
 
+[Github GraphQL API](https://docs.github.com/en/graphql)
+
 - [Github API](https://docs.github.com/cn/rest)
 
   - 获取用户的粉丝列表 `GET /users/{username}/followers`
@@ -31,4 +33,3 @@
   - 所以该动态模式下可以搜索、新建博文，并即时更新。
 
 切换动态模式，站点将变为 SFC 单页面应用。
-

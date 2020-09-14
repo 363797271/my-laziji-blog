@@ -6,6 +6,7 @@
 
 module.exports = {
   siteName: 'ZydBlog',
+  icon: '/src/favicon.png',
   plugins: [
     {
       use: '@gridsome/source-strapi',
@@ -17,20 +18,34 @@ module.exports = {
         // Possibility to login with a Strapi user,
         // when content types are not publicly available (optional).
       }
-    }
+    },
+    // {
+    //   resolve: `gridsome-source-github-api`,
+    //   options: {
+    //     token: process.env.GRIDSOME_GITHUB_TOKEN,
+    //     variables: {},
+    //     graphQLQuery: `
+    //       query {
+    //         repository(owner:"363797271",name:"linux"){
+    //           description
+    //         }
+    //       }
+    //       `
+    //   }
+    // }
   ],
   templates: {
-    Blog: [
+    StrapiBlog: [
       {
         path: '/blog/detail/:id',
         component: './src/templates/blog.vue'
       }
     ],
-    Project: [
-      {
-        path: '/project/detail/:name',
-        component: './src/templates/project.vue'
-      }
-    ]
+    // Project: [
+    //   {
+    //     path: '/project/detail/:name',
+    //     component: './src/templates/project.vue'
+    //   }
+    // ]
   }
 }

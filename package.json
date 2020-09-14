@@ -12,6 +12,7 @@
     "dayjs": "^1.8.35",
     "element-ui": "^2.13.2",
     "gridsome": "^0.7.0",
+    "gridsome-source-github-api": "^0.1.4",
     "markdown-it": "^11.0.0"
   }
 }

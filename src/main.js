@@ -1,12 +1,32 @@
 // This is the main.js file. Import global CSS and scripts here.
 // The Client API can be used here. Learn more: gridsome.org/docs/client-api
 
+import Router from 'vue-router'
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import DefaultLayout from '~/layouts/Default.vue'
 import dayjs from 'dayjs'
 import MarkdownIt from 'markdown-it'
 const md = new MarkdownIt()
+
+// 解决ElementUI导航栏中的vue-router在3.0版本以上重复点菜单报错问题
+const originalPush = Router.prototype.push
+Router.prototype.push = function push(location) {
+  return originalPush.call(this, location).catch(err => err)
+}
+
+const copy = message => {
+  let doc = document.createElement('input')
+  doc.value = message
+  document.body.appendChild(doc)
+  doc.select()
+  let status
+  try {
+    status = document.execCommand('copy')
+  } catch (e) {}
+  document.body.removeChild(doc)
+  return status
+}
 
 export default function(Vue, { router, head, isClient }) {
   Vue.mixin({
@@ -35,10 +55,10 @@ export default function(Vue, { router, head, isClient }) {
     if (!message) {
       message = window.location
     } else {
-      let arr = (window.location + '').split('#')
-      message = arr[0] + '#' + message
+      let origin = window.location.origin + ''
+      message = origin + message
     }
-    if (util.copy(message)) {
+    if (copy(message)) {
       Vue.prototype.$confirm('链接已复制,去分享给好友吧!!', '分享', {
         showCancelButton: false,
         showClose: false,

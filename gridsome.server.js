@@ -5,28 +5,28 @@
 // Changes here require a server restart.
 // To restart press CTRL + C in terminal and run `gridsome develop`
 
-const apis = require('./src/api/github')
+// const apis = require('./src/api/github')
 
 module.exports = function (api) {
   api.loadSource(async ({ addCollection }) => {
     // Use the Data Store API here: https://gridsome.org/docs/data-store-api/
 
-    const tasks = [];
-    ['followers', 'following', 'repos'].forEach(key => {
-      tasks.push(async () => {
-        const collection = addCollection(key)
-        try {
-          const { data } = await apis[key]()
-          if (data) {
-            data.forEach(item => {
-              collection.addNode(item)
-            })
-          }
-        } catch (err) {}
-      })
-    })
+    // const tasks = [];
+    // ['followers', 'following', 'repos'].forEach(key => {
+    //   tasks.push(async () => {
+    //     const collection = addCollection(key)
+    //     try {
+    //       const { data } = await apis[key]()
+    //       if (data) {
+    //         data.forEach(item => {
+    //           collection.addNode(item)
+    //         })
+    //       }
+    //     } catch (err) {}
+    //   })
+    // })
 
-    await Promise.all(tasks.map(v => v()))
+    // await Promise.all(tasks.map(v => v()))
 
   })
 

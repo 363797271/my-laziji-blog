@@ -90,7 +90,7 @@ export default {
   data() {
     return {
       login: this.$route.query.login || '',
-      loading: false,
+      loading: true,
       userInfo: {}
     }
   },

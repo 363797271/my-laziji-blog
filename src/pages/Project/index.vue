@@ -1,6 +1,6 @@
 <template>
   <Layout>
-    <div style="min-height: 600px">
+    <div style="min-height: 600px" v-loading="loading">
       <!-- <el-card shadow="never" style="margin-bottom: 20px">
         <el-input
           placeholder="请输入关键字"
@@ -80,7 +80,7 @@
               <el-col :span="16" style="padding-top: 5px">
                 <el-tooltip
                   effect="dark"
-                  :content="'star ' + item.stargazerCount"
+                  :content="'star ' + item.stargazers_count"
                   placement="bottom"
                 >
                   <i
@@ -88,39 +88,40 @@
                     style="margin: 0px 5px 0px 0px"
                   ></i>
                 </el-tooltip>
-                {{ item.stargazerCount }}
+                {{ item.stargazers_count }}
                 <el-tooltip
                   effect="dark"
-                  :content="'watch ' + item.watcherCount"
+                  :content="'watch ' + item.watchers_count"
                   placement="bottom"
                 >
                   <i class="el-icon-view" style="margin: 0px 5px 0px 15px"></i>
                 </el-tooltip>
-                {{ item.watcherCount }}
+                {{ item.watchers_count }}
                 <el-tooltip
                   effect="dark"
-                  :content="'fork ' + item.forkCount"
+                  :content="'fork ' + item.forks_count"
                   placement="bottom"
                 >
                   <i class="el-icon-bell" style="margin: 0px 5px 0px 15px"></i>
                 </el-tooltip>
-                {{ item.forkCount }}
+                {{ item.forks_count }}
               </el-col>
               <el-col :span="8" style="text-align: right;">
-                <el-tag size="small" type="danger" v-if="item.license">
-                  {{ item.license | upper }}
+                <el-tag
+                  size="small"
+                  type="danger"
+                  v-if="item.license && item.license.spdx_id"
+                >
+                  {{ item.license.spdx_id | upper }}
                 </el-tag>
-                <template v-if="item.language">
-                  <el-tag
-                    size="small"
-                    type="success"
-                    style="margin-left:5px"
-                    v-for="lang in item.language"
-                    :key="lang.name"
-                  >
-                    {{ lang.name | upper }}
-                  </el-tag>
-                </template>
+                <el-tag
+                  size="small"
+                  type="success"
+                  style="margin-left:5px"
+                  v-if="item.language"
+                >
+                  {{ item.language | upper }}
+                </el-tag>
               </el-col>
             </el-row>
           </div>
@@ -132,7 +133,7 @@
             layout="prev, pager, next"
             :current-page.sync="pageInfo.currentPage"
             :page-size="pageInfo.perPage"
-            :total="pageInfo.totalCount"
+            :total="totalCount"
           ></el-pagination>
         </div>
       </div>
@@ -150,42 +151,8 @@
   </Layout>
 </template>
 
-<page-query>
-query {
-  metadata {
-    githubData {
-      viewer {
-        repositories {
-          totalCount
-          nodes{
-            id
-            name
-            url
-            description
-            updatedAt
-            stargazers {
-              totalCount
-            }
-            watchers {
-              totalCount
-            }
-            forkCount
-            licenseInfo {
-              spdxId
-            }
-            languages {
-              nodes {
-                name
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-</page-query>
 <script>
+import { user, repos } from '@/api/github'
 export default {
   name: 'ProjectPage',
   metaInfo: {
@@ -193,53 +160,51 @@ export default {
   },
   data() {
     return {
-      perPage: 5,
-      currentPage: this.$route.query.page || 1
-    }
-  },
-  computed: {
-    repositories() {
-      return this.$page.metadata.githubData.viewer.repositories.nodes.map(
-        node => {
-          return Object.assign(node, {
-            stargazerCount: node.stargazers ? node.stargazers.totalCount : 0,
-            watcherCount: node.watchers ? node.watchers.totalCount : 0,
-            license: node.license ? node.license.spdxId : null,
-            language: node.languages ? node.languages.nodes || [] : []
-          })
-        }
-      )
-    },
-    repos() {
-      return this.repositories.slice(
-        (this.currentPage - 1) * this.perPage,
-        this.currentPage * this.perPage
-      )
-    },
-    pageInfo() {
-      const perPage = this.perPage
-      const totalCount = this.$page.metadata.githubData.viewer.repositories
-        .totalCount
-      return {
-        currentPage: this.currentPage || 1,
-        perPage,
-        totalCount
-      }
+      loading: true,
+      repos: [],
+      pageInfo: {
+        currentPage: 1,
+        perPage: 5
+      },
+      totalCount: 0
     }
   },
   methods: {
     changePage(page) {
-      this.currentPage = Number(page)
+      this.pageInfo.currentPage = Number(page)
+      this.getRepos()
     },
     goGithub(url) {
       window.open(url)
+    },
+    async user() {
+      try {
+        const { data } = await user()
+        this.totalCount = data.public_repos
+      } catch (err) {
+        console.log(err.message)
+      }
+    },
+    async getRepos() {
+      this.loading = true
+      try {
+        const { data } = await repos({
+          per_page: this.pageInfo.perPage,
+          page: this.pageInfo.currentPage
+        })
+        this.repos = data
+      } catch (err) {
+        console.log(err.message)
+      } finally {
+        this.loading = false
+      }
     }
+  },
+  async created() {
+    await this.user()
+    this.getRepos()
   }
 }
 </script>
 
-<style>
-.home-links a {
-  margin-right: 1rem;
-}
-</style>
+<style></style>

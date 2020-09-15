@@ -113,7 +113,7 @@ export default {
   name: 'ProjectDetailPage',
   data() {
     return {
-      loading: false,
+      loading: true,
       name: this.$route.query.name || '',
       project: {},
       content: ''

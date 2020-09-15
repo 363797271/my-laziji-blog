@@ -93,7 +93,7 @@ export default {
   },
   data() {
     return {
-      loading: false,
+      loading: true,
       activeTab: 'followers',
       pageInfo: {
         currentPage: 1,
@@ -139,7 +139,10 @@ export default {
       const api = this.activeTab === 'followers' ? followers : following
       this.loading = true
       try {
-        const { data } = await api(this.pageInfo)
+        const { data } = await api({
+          per_page: this.pageInfo.perPage,
+          page: this.pageInfo.currentPage
+        })
         this.list = data
       } catch (err) {
         console.log(err.message)

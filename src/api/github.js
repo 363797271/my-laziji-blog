@@ -38,10 +38,11 @@ module.exports = {
   },
 
   // 获取用户开源项目列表
-  repos: (username = user) => {
+  repos: (params) => {
     return request({
       method: 'GET',
-      url: `/users/${username}/repos`
+      url: `/users/${user}/repos`,
+      params
     })
   },
 

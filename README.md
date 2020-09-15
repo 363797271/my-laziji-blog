@@ -4,15 +4,18 @@
 
 # Github 数据问题
 
-[Github GraphQL API](https://docs.github.com/en/graphql) 获取的数据无法分页和查询，【开源项目】列表页保留了这个方式的实现。
+尝试了两个方式生成静态页面：
 
-[Github API](https://docs.github.com/cn/rest) 使用Gridsome生成GraphQL时经常失败（已授权）。
+1. [Github API](https://docs.github.com/cn/rest) 使用Gridsome生成GraphQL时经常失败（已授权）。
 
-最终改为动态请求获取。
+2. [Github GraphQL API](https://docs.github.com/en/graphql) 未能找到如何分页，【开源项目】列表页用该方式查询前100条数据，在页面中用JS进行分页展示。
+
+项目详情、粉丝/关注者列表、用户详情最终改为动态请求获取。
 
 Github API：
 
   - 获取用户的粉丝列表 `GET /users/{username}/followers`
+  -
   - 获取用户的的关注列表 `GET /users/{username}/following`
 
   - 获取用户信息 `GET /users/{username}`

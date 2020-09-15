@@ -6,7 +6,9 @@
 
 [Github GraphQL API](https://docs.github.com/en/graphql) 获取的数据无法分页和查询，【开源项目】列表页保留了这个方式的实现。
 
-[Github API](https://docs.github.com/cn/rest) 使用Gridsome生成GraphQL时经常失败（已授权）
+[Github API](https://docs.github.com/cn/rest) 使用Gridsome生成GraphQL时经常失败（已授权）。
+
+使用 Github API 配合 GraphQL 会导致 Gridsome build 的时候，一直卡在  Execute GraphQL（怀疑是一直重复请求）。
 
 最终改为动态请求获取。
 

@@ -1,27 +1,27 @@
 <template>
   <Layout>
-    <div>
+    <div v-loading="loading">
       <el-card
         shadow="never"
         style="min-height: 400px;margin-bottom: 20px;padding: 0px 0px 20px 0px"
       >
         <el-tabs v-model="activeTab" type="card" @tab-click="changeTab">
           <el-tab-pane
-            :label="'粉丝 ' + pageInfo.totalItems"
+            :label="'粉丝 ' + totalCount.followers"
             name="followers"
             style="padding: 5px"
           ></el-tab-pane>
           <el-tab-pane
-            :label="'关注 ' + followingTotal"
+            :label="'关注 ' + totalCount.following"
             name="following"
             style="padding: 5px"
           ></el-tab-pane>
         </el-tabs>
-        <div v-if="followers && followers.length">
+        <div v-if="list && list.length">
           <el-row style="min-height: 200px; ">
             <el-col
               :span="8"
-              v-for="item in followers"
+              v-for="item in list"
               :key="item.id"
               style="padding: 10px"
             >
@@ -32,7 +32,7 @@
                 <i class="el-icon-star-off"></i>
                 &emsp;
                 <a
-                  :href="`/user/social/detail/${item.login}`"
+                  :href="`/social/detail?login=${item.login}`"
                   style=" text-decoration:none;cursor:pointer"
                 >
                   {{ item.login }}
@@ -62,7 +62,7 @@
               layout="prev, pager, next"
               :current-page.sync="pageInfo.currentPage"
               :page-size="pageInfo.perPage"
-              :total="pageInfo.totalPages"
+              :total="total"
             ></el-pagination>
           </div>
         </div>
@@ -71,7 +71,12 @@
           v-else
         >
           <font style="font-size: 30px;color:#dddddd ">
-            <b>(￢_￢) 没有一个粉丝</b>
+            <b>
+              (￢_￢)
+              {{
+                activeTab === 'followers' ? '没有一个粉丝' : '还没有关注一个人'
+              }}
+            </b>
           </font>
         </div>
       </el-card>
@@ -79,48 +84,33 @@
   </Layout>
 </template>
 
-<page-query>
-query ($page: Int){
-  allFollowers(limit:100, perPage: 9, page: $page) @paginate {
-    pageInfo {
-      currentPage
-      totalPages
-      perPage
-      totalItems
-    }
-
-    edges {
-      node {
-        id
-        login
-        html_url
-        avatar_url
-      }
-    }
-  }
-  allFollowing {
-    totalCount
-  }
-}
-</page-query>
-
 <script>
+import { user, followers, following } from '@/api/github'
 export default {
   name: 'SocialPage',
   metaInfo: {
-    title: '社交圈(粉丝)'
+    title: '社交圈'
   },
   data() {
     return {
-      activeTab: 'followers'
+      loading: false,
+      activeTab: 'followers',
+      pageInfo: {
+        currentPage: 1,
+        perPage: 9
+      },
+      totalCount: {
+        followers: 0,
+        following: 0
+      },
+      list: []
     }
   },
   computed: {
-    followers() {
-      return this.$page.allFollowers.edges.map(edge => edge.node)
-    },
-    pageInfo() {
-      return this.$page.allFollowers.pageInfo
+    total() {
+      return this.activeTab === 'followers'
+        ? this.totalCount.followers
+        : this.totalCount.following
     },
     followingTotal() {
       return this.$page.allFollowing.totalCount
@@ -128,19 +118,39 @@ export default {
   },
   methods: {
     changeTab(tab) {
-      if (tab.name === 'following') {
-        location.href = '/social/following'
-      } else {
-        location.href = '/social'
-      }
+      this.activeTab = tab.name
+      this.pageInfo.currentPage = 1
+      this.query()
     },
     changePage(page) {
-      if (page == 1) {
-        window.location.href = `/social`
-      } else {
-        window.location.href = `/social/${page}`
+      this.pageInfo.currentPage = Number(page)
+      this.query()
+    },
+    async user() {
+      try {
+        const { data } = await user()
+        this.totalCount.followers = data.followers
+        this.totalCount.following = data.following
+      } catch (err) {
+        console.log(err.message)
+      }
+    },
+    async query() {
+      const api = this.activeTab === 'followers' ? followers : following
+      this.loading = true
+      try {
+        const { data } = await api(this.pageInfo)
+        this.list = data
+      } catch (err) {
+        console.log(err.message)
+      } finally {
+        this.loading = false
       }
     }
+  },
+  async created() {
+    await this.user()
+    this.query()
   }
 }
 </script>

@@ -12,18 +12,20 @@ const user = process.env.GRIDSOME_GITHUB_USERNAME
 
 module.exports = {
   // 获取用户的粉丝列表
-  followers: (username = user) => {
+  followers: (params) => {
     return request({
       method: 'GET',
-      url: `/users/${username}/followers`
+      url: `/users/${user}/followers`,
+      params
     })
   },
 
   // 获取用户的关注列表
-  following: (username = user) => {
+  following: (params) => {
     return request({
       method: 'GET',
-      url: `/users/${username}/following`
+      url: `/users/${user}/following`,
+      params
     })
   },
 

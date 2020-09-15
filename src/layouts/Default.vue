@@ -73,6 +73,37 @@ const randomInt = (s, e) => {
   r = parseInt(r, 10)
   return r
 }
+const fullScreen = () => {
+  var element = document.documentElement
+  if (window.ActiveXObject) {
+    var WsShell = new ActiveXObject('WScript.Shell')
+    WsShell.SendKeys('{F11}')
+  } else if (element.requestFullScreen) {
+    element.requestFullScreen()
+  } else if (element.msRequestFullscreen) {
+    element.msRequestFullscreen()
+  } else if (element.webkitRequestFullScreen) {
+    element.webkitRequestFullScreen()
+  } else if (element.mozRequestFullScreen) {
+    element.mozRequestFullScreen()
+  }
+}
+
+const fullExit = () => {
+  var element = document.documentElement
+  if (window.ActiveXObject) {
+    var WsShell = new ActiveXObject('WScript.Shell')
+    WsShell.SendKeys('{F11}')
+  } else if (element.requestFullScreen) {
+    document.exitFullscreen()
+  } else if (element.msRequestFullscreen) {
+    document.msExitFullscreen()
+  } else if (element.webkitRequestFullScreen) {
+    document.webkitCancelFullScreen()
+  } else if (element.mozRequestFullScreen) {
+    document.mozCancelFullScreen()
+  }
+}
 export default {
   components: {
     Sidebar,
@@ -104,10 +135,10 @@ export default {
   methods: {
     full() {
       if (!this.fullButton.full) {
-        this.$util.fullScreen()
+        fullScreen()
         this.fullButton.full = true
       } else {
-        this.$util.fullExit()
+        fullExit()
         this.fullButton.full = false
       }
     }

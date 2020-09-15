@@ -49,8 +49,9 @@ export default {
     this.active = '/' + arr[1]
   },
   methods: {
-    onSelect(index) {
-      this.$router.push(index)
+    onSelect(path) {
+      if (path == location.pathname) return
+      this.$router.push(path)
     }
   }
 }
